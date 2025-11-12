@@ -2,6 +2,8 @@
 # LINEaR
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/ashinishah/LINEaR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ashinishah/LINEaR/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/ashinishah/LINEaR/graph/badge.svg)](https://app.codecov.io/gh/ashinishah/LINEaR)
 <!-- badges: end -->
 
 The goal of LINEaR is to provide clean summary output
