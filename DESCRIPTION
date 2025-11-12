@@ -1,0 +1,25 @@
+Package: LINEaR
+Type: Package
+Title: Diagnostic Tools for LINE Assumptions in Linear Regression
+Version: 0.1.0
+Authors@R: c(
+    person(
+      "Ashini", "Shah",
+      email = "ashinis@umich.edu",
+      role = c("aut", "cre")
+    )
+  )
+Description: Provides clean summary output and diagnostic tools for checking 
+    LINE assumptions (Linearity, Independence, Normality, Equal Variance) in 
+    linear regresssion models. Includes visual diagnostics, statistical tests,
+    and a summary report of validity for all four assumptions.
+License: MIT
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.3.3
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
+VignetteBuilder: knitr
+Config/testthat/edition: 3
