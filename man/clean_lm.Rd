@@ -13,7 +13,16 @@ clean_lm(formula, data)
 \item{data}{A data frame containing the variables fitted in the formula}
 }
 \value{
-A list containing the fitted model and residuals
+A list of class \code{"clean_lm"} containing:
+\itemize{
+ \item \code{model}: the fitted \code{lm} object
+ \item \code{formula}: the model formula
+ \item \code{data}: input data frame
+ \item \code{residuals}: residuals from the model
+ \item \code{fitted}: fitted values from the model
+ \item \code{assumptions}: list with placeholders for LINE assumption checks
+ \item \code{call}: original function call
+ }
 }
 \description{
 Clean Linear Model
