@@ -21,14 +21,14 @@
 #'@export
 
 clean_lm <- function(formula, data) {
-  model <- lm(formula, data)
+  model <- stats::lm(formula, data)
 
   output <- list(
     model = model,
     formula = formula,
     data = data,
-    residuals = residuals(model),
-    fitted = fitted(model),
+    residuals = stats::residuals(model),
+    fitted = stats::fitted(model),
     assumptions = list(
       linearity = NULL,
       independence = NULL,
