@@ -26,7 +26,7 @@ values plot and Ramsey RESET test.
 \examples{
 data <- data.frame(x = 1:100, y = 3 * (1:100) + rnorm(100))
 fit <- clean_lm(y ~ x, data)
-check_linearity(fit)
-
+result <- check_linearity(fit)
+print(result$plot)
 
 }

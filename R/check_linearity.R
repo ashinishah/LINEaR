@@ -16,8 +16,8 @@
 #'@examples
 #'data <- data.frame(x = 1:100, y = 3 * (1:100) + rnorm(100))
 #'fit <- clean_lm(y ~ x, data)
-#'check_linearity(fit)
-#'
+#'result <- check_linearity(fit)
+#'print(result$plot)
 #'
 #'@export
 
@@ -30,9 +30,13 @@ check_linearity <- function(object, use_test = TRUE) {
   data <- object$data
   fitted <- object$fitted.values
   residuals <- object$residuals
+  plot_data <- data.frame(
+    fitted = stats::fitted(object$model),
+    residuals = stats::residuals(object$model)
+  )
 
   #Diagnostic Plot: Residuals vs. Fitted Values
-  plot <- ggplot2::ggplot(data, ggplot2::aes(x = fitted, y = residuals)) +
+  plot <- ggplot2::ggplot(plot_data, ggplot2::aes(x = fitted, y = residuals)) +
     ggplot2::geom_point(color = "red") +
     ggplot2::geom_smooth(method = "loess", se = FALSE, color = "darkred") +
     ggplot2::geom_hline(yintercept = 0, linetype = "dashed") +
