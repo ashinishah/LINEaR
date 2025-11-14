@@ -1,0 +1,46 @@
+---
+title: "LINEaR Dev Notebook"
+output: html_document
+---
+
+```{r setup, include = FALSE}
+library(devtools)
+devtools::load_all()
+```
+
+```{r}
+data <- data.frame(x = 1:100, y = 3 * (1:100) + rnorm(100))
+fit <- clean_lm(y ~ x, data)
+summary(fit$model)
+
+
+plot(fit$fitted, fit$residuals, 
+     main = "resid vs. fitted", 
+     xlab= "fitted", ylab = "resid")
+abline(h=0, lty = 2)
+```
+
+```{r}
+library("ggplot2")
+
+ggplot(fit$data, aes(x= fit$fitted, y= fit$residuals)) +
+  geom_point(color = "red") +
+  geom_smooth(method = "loess", se = FALSE, color = "darkred") +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Residuals vs. Fitted Values", x = "Fitted Values", y = "Residuals") + 
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+```
+
+```{r}
+library("lmtest")
+test_result <- resettest(fit$model)
+test_result
+
+if (test_result$p.value > 0.05) {
+  print ("TRUE")
+} else {
+  "Interpret plot visually"
+}
+```
+
