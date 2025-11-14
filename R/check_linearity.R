@@ -58,6 +58,7 @@ check_linearity <- function(object, use_test = TRUE) {
   }
 
   #Logical Flag and Message
+
   linearity_ok <- if (isTRUE(use_test)) {
     if (is.null(test_result)) {
       "Test Error: Interpret plot visually."
@@ -68,6 +69,11 @@ check_linearity <- function(object, use_test = TRUE) {
     }
   } else {
     "Test Skipped: Interpret plot visually."
+  }
+
+  # Defensive check to prevent CI error from malformed linearity_ok
+  if (!is.character(linearity_ok) && !is.logical(linearity_ok)) {
+    stop("linearity_ok must be either a logical or a non-NA character string.")
   }
 
   #output
