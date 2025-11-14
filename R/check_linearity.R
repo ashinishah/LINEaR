@@ -26,14 +26,21 @@ check_linearity <- function(object, use_test = TRUE) {
     stop("Input must be a clean_lm object.")
   }
 
-  #Diagnostic Plot: Residuas vs. Fitted Values
-  plot <- ggplot2::ggplot(object$data, ggplot2::aes(x= object$fitted, y= object$residuals)) +
+  #Define Variables
+  data <- object$data
+  fitted <- object$fitted.values
+  residuals <- object$residuals
+
+  #Diagnostic Plot: Residuals vs. Fitted Values
+  plot <- ggplot2::ggplot(data, ggplot2::aes(x = fitted, y = residuals)) +
     ggplot2::geom_point(color = "red") +
     ggplot2::geom_smooth(method = "loess", se = FALSE, color = "darkred") +
     ggplot2::geom_hline(yintercept = 0, linetype = "dashed") +
-    ggplot2::labs(title = "Residuals vs. Fitted Values", x = "Fitted Values", y = "Residuals") +
+    ggplot2::labs(title = "Residuals vs. Fitted Values",
+                  x = "Fitted Values",
+                  y = "Residuals") +
     ggplot2::theme_minimal() +
-    ggplot2::theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+    ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5, face = "bold"))
 
   #Statistical Test: Ramsey RESET
   test_result <- NULL
