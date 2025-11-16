@@ -26,8 +26,11 @@ jobs:
           needs: coverage
 
       - name: Run covr and upload to Codecov
-        run: covr::codecov()
+        run: covr::codecov(token = Sys.getenv("CODECOV_TOKEN"))
         shell: Rscript {0}
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
 
       - name: Show testthat output
         if: always()
