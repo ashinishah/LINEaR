@@ -1,0 +1,14 @@
+coverage:
+  precision: 2
+  round: down
+  range: "70...100"
+
+comment: false
+
+parsers:
+  cobertura:
+    branch_detection:
+      conditional: yes
+      loop: yes
+      method: yes
+      macro: yes
