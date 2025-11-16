@@ -1,41 +1,41 @@
+name: Test and Coverage
+
 on:
   push:
-    branches: [main, master]
+    branches: [ main ]
   pull_request:
 
-name: test-coverage
-
-permissions: read-all
-
 jobs:
-  test-coverage:
+  test:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
-      - uses: r-lib/actions/setup-r@v2
-        with:
-          use-public-rspm: true
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
 
-      - uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          extra-packages: any::covr
-          needs: coverage
-
-      - name: Run covr and upload to Codecov (with retry)
+      - name: Install dependencies
         run: |
-          tries=0
-          until Rscript -e 'covr::codecov(token = Sys.getenv("CODECOV_TOKEN"))'; do
-            tries=$((tries+1))
-            if [ $tries -ge 3 ]; then
-              echo "covr::codecov() failed after $tries attempts"
-              exit 1
-            fi
-            echo "Retrying in 30 seconds..."
-            sleep 30
-          done
-        shell: bash
+          Rscript -e 'install.packages(c("devtools","testthat"))'
+
+      - name: Run tests
+        run: |
+          Rscript -e 'devtools::test()'
+
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+
+      - name: Install dependencies
+        run: |
+          Rscript -e 'install.packages(c("devtools","covr"))'
+
+      - name: Run coverage and upload to Codecov
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-
+        run: |
+          Rscript -e 'cov <- covr::package_coverage(type="tests"); covr::codecov(cov)'

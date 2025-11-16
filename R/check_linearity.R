@@ -1,41 +1,13 @@
-#'Check Linearity Assumption
-#'
-#'Assesses linearity assumption using a residuals vs. fitted
-#'values plot and Ramsey RESET test.
-#'
-#'@param object A \code{clean_lm} object returned by \code{clean_lm()}.
-#'@param use_test Logical; if TRUE, performs Ramsey RESET test using \code{lmtest::resettest()}.
-#'
-#'@return A list containing:
-#'\itemize{
-#'  \item \code{plot}: ggplot object showing residuals vs. fitted values
-#'  \item \code{test_result}: result of RESET test (if \code{use_test = TRUE})
-#'  \item \code{linearity_ok}: logical flag indicating whether linearity assumption holds
-#'}
-#'
-#'@examples
-#'data <- data.frame(x = 1:100, y = 3 * (1:100) + rnorm(100))
-#'fit <- clean_lm(y ~ x, data)
-#'result <- check_linearity(fit)
-#'print(result$plot)
-#'
-#'@export
-
 check_linearity <- function(object, use_test = TRUE) {
   if (!inherits(object, "clean_lm")) {
     stop("Input must be a clean_lm object.")
   }
 
-  #Define Variables
-  data <- object$data
-  fitted <- object$fitted.values
-  residuals <- object$residuals
   plot_data <- data.frame(
     fitted = stats::fitted(object$model),
     residuals = stats::residuals(object$model)
   )
 
-  #Diagnostic Plot: Residuals vs. Fitted Values
   plot <- ggplot2::ggplot(plot_data, ggplot2::aes(x = fitted, y = residuals)) +
     ggplot2::geom_point(color = "red") +
     ggplot2::geom_smooth(method = "loess", se = FALSE, color = "darkred") +
@@ -46,7 +18,6 @@ check_linearity <- function(object, use_test = TRUE) {
     ggplot2::theme_minimal() +
     ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5, face = "bold"))
 
-  #Statistical Test: Ramsey RESET
   test_result <- NULL
   if (isTRUE(use_test)) {
     test_result <- tryCatch({
@@ -57,29 +28,21 @@ check_linearity <- function(object, use_test = TRUE) {
     })
   }
 
-  #Logical Flag and Message
-
   linearity_ok <- if (isTRUE(use_test)) {
     if (is.null(test_result)) {
-      "Test Error: Interpret plot visually."
-    } else if (test_result$p.value > 0.05) {
-      TRUE
-    } else {
-      FALSE
-    }
+      NA
+    } else test_result$p.value > 0.05
   } else {
-    "Test Skipped: Interpret plot visually."
+    NA
   }
 
-  # Defensive check to prevent CI error from malformed linearity_ok
-  if (!is.character(linearity_ok) && !is.logical(linearity_ok)) {
-    stop("linearity_ok must be either a logical or a non-NA character string.")
-  }
+  # update assumptions in the clean_lm object
+  object$assumptions$linearity <- linearity_ok
 
-  #output
   return(list(
     plot = plot,
     test_result = test_result,
-    linearity_ok = linearity_ok
+    linearity_ok = linearity_ok,
+    object = object
   ))
 }

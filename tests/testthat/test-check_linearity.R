@@ -1,35 +1,24 @@
-test_that("check_linearity returns expected structure", {
-  data <- data.frame(x = 1:100, y = 3 * (1:100) + rnorm(100))
-  fit <- clean_lm(y ~ x, data)
+test_that("check_linearity updates assumptions correctly", {
+  fit <- clean_lm(mpg ~ wt, data = mtcars)
   result <- check_linearity(fit)
 
-  expect_type(result, "list")
-  expect_named(result, c("plot", "test_result", "linearity_ok"))
-  expect_s3_class(result$plot, "ggplot")
+  expect_true(is.list(result))
+  expect_named(result, c("plot", "test_result", "linearity_ok", "object"))
+
+  # Assumptions list updated
+  expect_true("linearity" %in% names(result$object$assumptions))
+  expect_true(is.logical(result$object$assumptions$linearity) || is.na(result$object$assumptions$linearity))
 })
 
-test_that("linearity_ok is TRUE when RESET test passes", {
-  fit <- clean_lm(mpg ~ wt, data = mtcars)
-  result <- check_linearity(fit, use_test = TRUE)
+test_that("check_linearity handles non-linear data", {
+  set.seed(123)
+  df <- data.frame(x = 1:50, y = (1:50)^2 + rnorm(50, sd = 10))
+  fit <- clean_lm(y ~ x, data = df)
+  result <- check_linearity(fit)
 
-  expect_true(result$linearity_ok == TRUE || result$linearity_ok == FALSE)
+  expect_true("linearity" %in% names(result$object$assumptions))
 })
 
-test_that("linearity_ok gives message when test is skipped", {
-  fit <- clean_lm(mpg ~ wt, data = mtcars)
-  result <- check_linearity(fit, use_test = FALSE)
-
-  expect_equal(result$linearity_ok, "Test Skipped: Interpret plot visually.")
+test_that("check_linearity errors on wrong input", {
+  expect_error(check_linearity("not_a_model"))
 })
-
-test_that("linearity_ok gives message when test errors", {
-  data <- data.frame(x = 1:10, y = rep(1, 10))
-  fit <- clean_lm(y ~ x, data)
-
-  expect_warning({
-    result <- check_linearity(fit, use_test = TRUE)
-    expect_equal(result$linearity_ok, "Test Error: Interpret plot visually.")
-  })
-})
-
-

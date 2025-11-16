@@ -43,4 +43,11 @@ if (test_result$p.value > 0.05) {
   "Interpret plot visually"
 }
 ```
+```{r}
+data <- data.frame(x = 1:100, y = 3 * (1:100) + rnorm(100))
+fit <- clean_lm(y ~ x, data)
+summary(fit$model)
+
+check_linearity(fit)
+```
 
