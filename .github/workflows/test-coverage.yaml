@@ -10,8 +10,6 @@ permissions: read-all
 jobs:
   test-coverage:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - uses: actions/checkout@v4
@@ -25,12 +23,19 @@ jobs:
           extra-packages: any::covr
           needs: coverage
 
-      - name: Run covr and upload to Codecov
-        run: covr::codecov(token = Sys.getenv("CODECOV_TOKEN"))
-        shell: Rscript {0}
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-
+      - name: Run covr and upload to Codecov (with retry)
+        run: |
+          tries=0
+          until Rscript -e 'covr::codecov()'; do
+            tries=$((tries+1))
+            if [ $tries -ge 3 ]; then
+              echo "covr::codecov() failed after $tries attempts"
+              exit 1
+            fi
+            echo "Retrying in 30 seconds..."
+            sleep 30
+          done
+        shell: bash
 
       - name: Show testthat output
         if: always()
