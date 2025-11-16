@@ -5,7 +5,7 @@ on:
     branches: [main, master]
   pull_request:
 
-name: test-coverage.yaml
+name: test-coverage
 
 permissions: read-all
 
@@ -35,16 +35,19 @@ jobs:
             install_path = file.path(normalizePath(Sys.getenv("RUNNER_TEMP"), winslash = "/"), "package")
           )
           print(cov)
-          covr::to_cobertura(cov)
+          # Write Cobertura XML to disk so Codecov can find it
+          covr::to_cobertura(cov, file = "cobertura.xml")
+          # Optional: print session info for debugging differences between local and CI
+          sessionInfo()
         shell: Rscript {0}
 
-      - uses: codecov/codecov-action@v5
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
         with:
-          # Fail if error if not on PR, or if on PR and token is given
-          fail_ci_if_error: ${{ github.event_name != 'pull_request' || secrets.CODECOV_TOKEN }}
           files: ./cobertura.xml
           plugins: noop
           disable_search: true
+          fail_ci_if_error: ${{ github.event_name != 'pull_request' || secrets.CODECOV_TOKEN }}
           token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Show testthat output
