@@ -26,7 +26,7 @@ jobs:
       - name: Run covr and upload to Codecov (with retry)
         run: |
           tries=0
-          until Rscript -e 'covr::codecov()'; do
+          until Rscript -e 'covr::codecov(token = Sys.getenv("CODECOV_TOKEN"))'; do
             tries=$((tries+1))
             if [ $tries -ge 3 ]; then
               echo "covr::codecov() failed after $tries attempts"
@@ -36,9 +36,6 @@ jobs:
             sleep 30
           done
         shell: bash
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-      - name: Show testthat output
-        if: always()
-        run: |
-          find '${{ runner.temp }}/package' -name 'testthat.Rout*' -exec cat '{}' \; || true
-        shell: bash
