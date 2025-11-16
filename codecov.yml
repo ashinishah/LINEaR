@@ -3,12 +3,4 @@ coverage:
   round: down
   range: "70..100"
 
-parsers:
-  cobertura:
-    branch_detection:
-      conditional: true
-      loop: true
-      method: true
-      macro: true
-
 comment: false
