@@ -1,5 +1,11 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
-^\.github$
 ^dev-notes\.Rmd$
 
+^\.git$
+^\.github$
+^\.gitignore$
+^..Rcheck$
+^vignettes/.gitignore$
+^doc$
+^Meta$

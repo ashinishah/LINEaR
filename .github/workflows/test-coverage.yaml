@@ -28,9 +28,13 @@ jobs:
         with:
           extra-packages: testthat,covr
 
+      # Build package
+      - name: Build package
+        run: R CMD build .
+
       # Run R CMD check (tests + validation)
-      - name: Run R CMD check
-        run: R CMD check .
+      - name: Check package
+        run: R CMD check *.tar.gz
 
       # Run coverage and upload to Codecov
       - name: Run coverage and upload to Codecov

@@ -11,7 +11,6 @@ Description: Provides clean summary output and diagnostic tools for checking
     and a summary report of validity for all four assumptions.
 License: MIT + file LICENSE
 Encoding: UTF-8
-LazyData: true
 RoxygenNote: 7.3.3
 Suggests: 
     knitr,
