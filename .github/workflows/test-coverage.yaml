@@ -2,7 +2,7 @@ name: Test and Coverage
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master ]   # adjust to your default branch
   pull_request:
 
 jobs:
@@ -14,7 +14,7 @@ jobs:
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
 
-      # Cache R packages
+      # Cache R packages between runs
       - name: Cache R packages
         uses: actions/cache@v4
         with:
@@ -22,16 +22,19 @@ jobs:
           key: ${{ runner.os }}-r-${{ hashFiles('**/DESCRIPTION') }}
           restore-keys: ${{ runner.os }}-r-
 
-      # Install dependencies including covr
+      # Install dependencies (DESCRIPTION + extras)
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: covr
+          extra-packages: testthat,covr
 
-      # Run tests and coverage
-      - name: Run tests and coverage
+      # Run R CMD check (tests + validation)
+      - name: Run R CMD check
+        run: R CMD check .
+
+      # Run coverage and upload to Codecov
+      - name: Run coverage and upload to Codecov
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         run: |
-          Rscript -e 'devtools::test()'
           Rscript -e 'cov <- covr::package_coverage(type="tests"); covr::codecov(cov)'
