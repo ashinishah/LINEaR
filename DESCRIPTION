@@ -3,6 +3,7 @@ Type: Package
 Title: Diagnostic Tools for LINE Assumptions in Linear Regression
 Version: 0.1.0
 Authors@R: c(person("Ashini", "Shah", email = "ashinis@umich.edu", role = c("aut", "cre")))
+Author: Ashini Shah [aut, cre]
 Maintainer: Ashini Shah <ashinis@umich.edu>
 Description: Provides clean summary output and diagnostic tools for checking 
     LINE assumptions (Linearity, Independence, Normality, Equal Variance) in 
