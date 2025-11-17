@@ -47,4 +47,4 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         run: |
-          Rscript -e 'cov <- covr::package_coverage(path=".", type="tests"); covr::codecov(cov)'
+          Rscript -e 'cov <- covr::package_coverage(path="/home/runner/work/LINEaR/LINEaR", type="tests"); covr::codecov(cov)'
