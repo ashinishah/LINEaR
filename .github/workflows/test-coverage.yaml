@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 name: Test and Coverage
 
 on:
@@ -5,6 +6,8 @@ on:
     branches: [ main, master ]   # adjust to your default branch
   pull_request:
 
+=======
+>>>>>>> 2e4a406077de0f9cd495fe944c915198b519642f
 jobs:
   test-and-coverage:
     runs-on: ubuntu-latest
@@ -14,7 +17,10 @@ jobs:
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
 
+<<<<<<< HEAD
       # Cache R packages between runs
+=======
+>>>>>>> 2e4a406077de0f9cd495fe944c915198b519642f
       - name: Cache R packages
         uses: actions/cache@v4
         with:
@@ -22,17 +28,26 @@ jobs:
           key: ${{ runner.os }}-r-${{ hashFiles('**/DESCRIPTION') }}
           restore-keys: ${{ runner.os }}-r-
 
+<<<<<<< HEAD
       # Install dependencies (DESCRIPTION + extras)
+=======
+>>>>>>> 2e4a406077de0f9cd495fe944c915198b519642f
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: testthat,covr
 
+<<<<<<< HEAD
       # Run R CMD check (tests + validation)
       - name: Run R CMD check
         run: R CMD check .
 
       # Run coverage and upload to Codecov
+=======
+      - name: Run R CMD check
+        run: R CMD check .
+
+>>>>>>> 2e4a406077de0f9cd495fe944c915198b519642f
       - name: Run coverage and upload to Codecov
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
