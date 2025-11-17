@@ -36,9 +36,16 @@ jobs:
       - name: Check package
         run: R CMD check *.tar.gz --no-manual
 
+      # Debug: show current path and files
+      - name: Show working directory
+        run: |
+          pwd
+          ls -R
+
       # Run coverage and upload to Codecov
       - name: Run coverage and upload to Codecov
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         run: |
-          Rscript -e 'cov <- covr::package_coverage(type="tests"); covr::codecov(cov)'
+          # Adjust path if needed based on pwd/ls output
+          Rscript -e 'cov <- covr::package_coverage(path=".", type="tests"); covr::codecov(cov)'
