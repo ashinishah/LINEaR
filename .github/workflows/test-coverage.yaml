@@ -34,7 +34,7 @@ jobs:
 
       # Run R CMD check (tests + validation)
       - name: Check package
-        run: R CMD check *.tar.gz
+        run: R CMD check *.tar.gz --no-manual
 
       # Run coverage and upload to Codecov
       - name: Run coverage and upload to Codecov
