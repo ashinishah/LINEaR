@@ -40,12 +40,12 @@ jobs:
       - name: Show working directory
         run: |
           pwd
-          ls -R
+          ls -l
 
       # Run coverage and upload to Codecov
       - name: Run coverage and upload to Codecov
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         run: |
-          # Adjust path if needed based on pwd/ls output
+          cd LINEaR   # move into the package root
           Rscript -e 'cov <- covr::package_coverage(path=".", type="tests"); covr::codecov(cov)'
