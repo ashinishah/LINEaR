@@ -50,4 +50,27 @@ summary(fit$model)
 
 check_linearity(fit)
 ```
+```{r}
+
+res <- stats::residuals(fit$model)
+
+plot <- ggplot2::ggplot(data.frame(res=res), ggplot2::aes(sample=res))+
+    ggplot2::stat_qq(color="green") +
+    ggplot2::stat_qq_line(color="darkgreen") +
+    ggplot2::labs(title= "Q-Q Plot of Residuals") +
+    ggplot2::theme_minimal()+
+    ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5, face = "bold"))
+
+plot
+```
+```{r}
+clean_fit <- clean_lm(y~x, data = data)
+summary(clean_fit$model)
+
+result <- check_normality(clean_fit, use_skew_kurt = TRUE)
+result$plot
+result$normality_ok
+result$skew_kurt
+
+```
 

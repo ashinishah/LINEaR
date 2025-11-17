@@ -28,6 +28,19 @@ jobs:
         with:
           extra-packages: testthat,covr
 
+      # Debug: show current path and files
+      - name: Show working directory
+        run: |
+          pwd
+          ls -l
+
+      # Run coverage on the source tree BEFORE build/check
+      - name: Run coverage and upload to Codecov
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: |
+          Rscript -e 'cov <- covr::package_coverage(path=".", type="tests"); covr::codecov(cov)'
+
       # Build package
       - name: Build package
         run: R CMD build .
@@ -35,16 +48,3 @@ jobs:
       # Run R CMD check (tests + validation)
       - name: Check package
         run: R CMD check *.tar.gz --no-manual
-
-      # Debug: show current path and files
-      - name: Show working directory
-        run: |
-          pwd
-          ls -l
-
-      # Run coverage and upload to Codecov
-      - name: Run coverage and upload to Codecov
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        run: |
-          Rscript -e 'cov <- covr::package_coverage(path="/home/runner/work/LINEaR/LINEaR", type="tests"); covr::codecov(cov)'

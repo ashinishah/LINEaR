@@ -7,26 +7,41 @@
 check_linearity(object, use_test = TRUE)
 }
 \arguments{
-\item{object}{A \code{clean_lm} object returned by \code{clean_lm()}.}
+\item{object}{A \code{clean_lm} object. Must contain a \code{model} component
+that is a fitted \code{lm} object.}
 
-\item{use_test}{Logical; if TRUE, performs Ramsey RESET test using \code{lmtest::resettest()}.}
+\item{use_test}{Logical flag indicating whether to run the RESET test
+(\code{lmtest::resettest}). Defaults to \code{TRUE}.}
 }
 \value{
-A list containing:
-\itemize{
- \item \code{plot}: ggplot object showing residuals vs. fitted values
- \item \code{test_result}: result of RESET test (if \code{use_test = TRUE})
- \item \code{linearity_ok}: logical flag indicating whether linearity assumption holds
-}
+A list with the following components:
+\item{plot}{A ggplot2 object showing residuals vs. fitted values.}
+\item{test_result}{The result of the RESET test, or \code{NULL} if not run
+  or if the test errored.}
+\item{linearity_ok}{Logical indicating whether the linearity assumption
+  appears valid (\code{TRUE}/\code{FALSE}), or a character message if the test
+  was skipped or errored.}
+\item{object}{The input \code{clean_lm} object with its
+  \code{assumptions$linearity} field updated.}
 }
 \description{
-Assesses linearity assumption using a residuals vs. fitted
-values plot and Ramsey RESET test.
+Produces a residuals vs. fitted plot and optionally performs the RESET test
+to assess linearity assumption in a fitted linear regression model.
+}
+\details{
+The function checks linearity both visually (via residuals vs. fitted plot)
+and statistically (via the RESET test). If the RESET test is run and
+succeeds, \code{linearity_ok} is set to \code{TRUE} if the p-value is
+greater than 0.05, otherwise \code{FALSE}. If the test errors or is skipped,
+a message is returned prompting the user to interpret the plot visually.
 }
 \examples{
-data <- data.frame(x = 1:100, y = 3 * (1:100) + rnorm(100))
-fit <- clean_lm(y ~ x, data)
-result <- check_linearity(fit)
-print(result$plot)
+\dontrun{
+fit <- lm(mpg ~ wt + hp, data = mtcars)
+clean_fit <- clean_lm(fit)
+result <- check_linearity(clean_fit)
+result$plot
+result$linearity_ok
+}
 
 }

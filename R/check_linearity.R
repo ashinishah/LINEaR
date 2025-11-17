@@ -1,45 +1,46 @@
-#'Check Linearity Assumption
+#' Check Linearity Assumption
 #'
-#'Produces a residuals vs. fitted plot and optionally performs the RESET test
-#'to assess linearity assumption in a fitted linear regression model.
+#' Produces a residuals vs. fitted plot and optionally performs the RESET test
+#' to assess linearity assumption in a fitted linear regression model.
 #'
-#'@param object A \code{clean_lm} object. Must contain a \code{model} component
-#'that is a fitted \code{lm} object.
+#' @param object A \code{clean_lm} object. Must contain a \code{model} component
+#'   that is a fitted \code{lm} object.
 #'
-#'@param use_test Logical flag indicating whether to run the RESET test
-#'  (\code{lmtest::resettest}). Defaults to \code{TRUE}.
+#' @param use_test Logical flag indicating whether to run the RESET test
+#'   (\code{lmtest::resettest}). Defaults to \code{TRUE}.
 #'
-#'@return A list with the following components:
-#'\item{plot}{A ggplot2 object showing residuals vs. fitted values.}
-#'\item{test_result}{The result of the RESET test, or \code{NULL} if not run
-#'  or if the test failed.}
-#'\item{linearity_ok}{Logical indicating whether the linearity assumption
-#'  appears valid (\code{TRUE}/\code{FALSE}), or \code{NA} if not tested.}
-#'\item{object}{The input \code{clean_lm} object with its
-#'  \code{assumptions$linearity} field updated.}
+#' @return A list with the following components:
+#' \item{plot}{A ggplot2 object showing residuals vs. fitted values.}
+#' \item{test_result}{The result of the RESET test, or \code{NULL} if not run
+#'   or if the test errored.}
+#' \item{linearity_ok}{Logical indicating whether the linearity assumption
+#'   appears valid (\code{TRUE}/\code{FALSE}), or a character message if the test
+#'   was skipped or errored.}
+#' \item{object}{The input \code{clean_lm} object with its
+#'   \code{assumptions$linearity} field updated.}
 #'
-#'@details
-#'The function checks linearity both visually (via residuals vs. fitted plot)
-#'and statistically (via the RESET test). If the RESET test is run and
-#'succeeds, \code{linearity_ok} is set to \code{TRUE} if the p-value is
-#'greater than 0.05, otherwise \code{FALSE}.
+#' @details
+#' The function checks linearity both visually (via residuals vs. fitted plot)
+#' and statistically (via the RESET test). If the RESET test is run and
+#' succeeds, \code{linearity_ok} is set to \code{TRUE} if the p-value is
+#' greater than 0.05, otherwise \code{FALSE}. If the test errors or is skipped,
+#' a message is returned prompting the user to interpret the plot visually.
 #'
-#'@examples
-#'\dontrun{
-#'fit <- lm(mpg ~ wt + hp, data = mtcars)
-#'clean_fit <- clean_lm(fit)
-#'result <- check_linearity(clean_fit)
-#'result$plot
-#'result$linearity_ok
-#'}
+#' @examples
+#' \dontrun{
+#' fit <- lm(mpg ~ wt + hp, data = mtcars)
+#' clean_fit <- clean_lm(fit)
+#' result <- check_linearity(clean_fit)
+#' result$plot
+#' result$linearity_ok
+#' }
 #'
-#'@importFrom stats fitted residuals
-#'@importFrom lmtest resettest
-#'@importFrom rlang .data
-#'@import ggplot2
+#' @importFrom stats fitted residuals
+#' @importFrom lmtest resettest
+#' @importFrom rlang .data
+#' @import ggplot2
 #'
-#'@export
-
+#' @export
 check_linearity <- function(object, use_test = TRUE) {
   if (!inherits(object, "clean_lm")) {
     stop("Input must be a clean_lm object.")
@@ -61,21 +62,25 @@ check_linearity <- function(object, use_test = TRUE) {
     ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5, face = "bold"))
 
   test_result <- NULL
+  linearity_ok <- NULL
+
   if (isTRUE(use_test)) {
     test_result <- tryCatch({
       lmtest::resettest(object$model)
     }, error = function(e) {
-      warning("RESET test error:", e$message)
+      warning("RESET test errored: ", e$message)
       NULL
     })
-  }
 
-  linearity_ok <- if (isTRUE(use_test)) {
     if (is.null(test_result)) {
-      NA
-    } else test_result$p.value > 0.05
+      linearity_ok <- "Test Error: Interpret plot visually."
+    } else if (test_result$p.value < 0.05) {
+      linearity_ok <- FALSE
+    } else {
+      linearity_ok <- TRUE
+    }
   } else {
-    NA
+    linearity_ok <- "Test Skipped: Interpret plot visually."
   }
 
   # update assumptions in the clean_lm object
