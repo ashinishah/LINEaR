@@ -8,12 +8,13 @@ Authors@R: c(
       email = "ashinis@umich.edu",
       role = c("aut", "cre")
     )
-  )
+)
+Maintainer: Ashini Shah <ashinis@umich.edu>
 Description: Provides clean summary output and diagnostic tools for checking 
     LINE assumptions (Linearity, Independence, Normality, Equal Variance) in 
-    linear regresssion models. Includes visual diagnostics, statistical tests,
+    linear regression models. Includes visual diagnostics, statistical tests,
     and a summary report of validity for all four assumptions.
-License: MIT
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.3
