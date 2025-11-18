@@ -74,3 +74,22 @@ result$skew_kurt
 
 ```
 
+```{r}
+data <- data.frame(x = 1:100, y = 3 * (1:100) + rnorm(100))
+fit <- clean_lm(y ~ x, data)
+summary(fit$model)
+
+res <- stats::residuals(fit$model)
+
+plot <- ggplot2::ggplot(data.frame(index= seq_along(res), res = res), 
+                          ggplot2::aes(x = index, y = res)) +
+    ggplot2::geom_point(color = "orange") +
+    ggplot2::geom_hline(yintercept = 0, linetype = "dashed", color = "darkorange") +
+    ggplot2::labs(title = "Residuals vs. Observation Index", 
+                  x = "Observation Index", y = "Residuals") + 
+    ggplot2::theme_minimal() +
+    ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5, face = "bold"))
+
+plot
+```
+
