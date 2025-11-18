@@ -37,10 +37,11 @@ linear regression model.
 }
 \details{
 The function checks normality both visually (via Q-Q plot)
-and statistically (via the Shapiro-Wilk test). #' If the Shapiro-Wilk test is run and succeeds, \code{normality_ok}
-is set to \code{TRUE} if the p-value is greater than 0.05, otherwise \code{FALSE}.
-If the test errors or is skipped, a character message is returned prompting
-the user to interpret the plot visually.
+and statistically (via the Shapiro-Wilk test). If points closely follow the diagonal
+line, the normality assumption is more plausible. If the Shapiro-Wilk test is run
+and succeeds without error, \code{normality_ok} is set to \code{TRUE} if the
+p-value is greater than 0.05, otherwise \code{FALSE}. If the test errors or is skipped,
+a character message is returned prompting the user to interpret the plot visually.
 }
 \examples{
 \dontrun{

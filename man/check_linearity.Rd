@@ -30,7 +30,8 @@ to assess linearity assumption in a fitted linear regression model.
 }
 \details{
 The function checks linearity both visually (via residuals vs. fitted plot)
-and statistically (via the RESET test). If the RESET test is run and
+and statistically (via the RESET test). If residuals are scattered randomly
+about 0, the linearity assumption is more plausible. If the RESET test is run and
 succeeds, \code{linearity_ok} is set to \code{TRUE} if the p-value is
 greater than 0.05, otherwise \code{FALSE}. If the test errors or is skipped,
 a message is returned prompting the user to interpret the plot visually.
