@@ -10,7 +10,6 @@ vignette: >
 ---
 
 ```{r setup, include = FALSE}
-devtools::load_all()
 library(LINEaR)
 library(ggplot2)
 library(bench)
