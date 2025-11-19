@@ -33,7 +33,7 @@ clean_lm <- function(formula, data) {
       linearity = NULL,
       independence = NULL,
       normality = NULL,
-      equal_variance = NULL
+      equalvariance = NULL
     ),
     call = match.call()
   )

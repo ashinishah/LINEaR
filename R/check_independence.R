@@ -1,48 +1,23 @@
-#'Check Independence Assumption
+#' Check Independence Assumption
 #'
-#'Produces a residuals vs. observation index plot, optionally performs
-#'the Durbin-Watson test, in order to assess independence of residuals
-#'assumption in a fitted linear regression model.
+#' Produces a residuals vs. observation index plot, optionally performs
+#' the Durbin-Watson test, in order to assess independence of residuals
+#' assumption in a fitted linear regression model.
 #'
-#'@param object A \code{clean_lm} object. Must contain a \code{model}
-#'  component that is a fitted \code{lm} object.
+#' @param object A \code{clean_lm} object. Must contain a \code{model}
+#'   component that is a fitted \code{lm} object.
+#' @param use_test Logical flag indicating whether to run Durbin-Watson
+#'   test (\code{lmtest::dwtest}). Defaults to \code{TRUE}.
 #'
-#'@param use_test Logical flag indicating whether to run Durbin-Watson
-#'  test (\code{lmtest::dwtest}). Defaults to \code{TRUE}.
+#' @return An object of class \code{check_independence} and \code{check_assumption},
+#'   with components:
+#'   \item{plot}{Residuals vs. observation index plot (ggplot2).}
+#'   \item{test_result}{Durbin-Watson test result, or error object if test failed.}
+#'   \item{assumption_ok}{Logical TRUE/FALSE if test succeeded, NA if skipped/errored.}
+#'   \item{message}{Character string prompting interpretation.}
+#'   \item{object}{The input \code{clean_lm} object with updated assumptions.}
 #'
-#'@return A list with the following components:
-#'\item{plot}{A ggplot2 object showing residuals vs. observation index.}
-#'\item{test_result}{The result of the Durbin-Watson test, or \code{NULL} if not run
-#'  or if the test errored.}
-#'\item{independence_ok}{Logical indicating whether the independence assumption
-#'  appears valid (\code{TRUE}/\code{FALSE}), or a character message if the test
-#'  was skipped or errored.}
-#'\item{object}{The input \code{clean_lm} object with its
-#'  \code{assumptions$independence} field updated.}
-#'
-#'@details
-#'The function checks independence both visually (via residual vs. index plot)
-#'and statistically (via Durbin-Watson test). The residual plot is informative
-#'when the observation index has inherent meaning (e.g. time order). If the
-#'Durbin-Watson test is run and succeeds without error, \code{independence_ok}
-#'is set to \code{TRUE} if the p-value is greater that 0.05, otherwise \code{FALSE}.
-#'If the test errors of is skippped, a characcter message is returned, prompting
-#'user to interpret plot visually.
-#'
-#'@examples
-#'\dontrun{
-#'fit <- lm(mpg ~ wt + hp, data = mtcars)
-#'clean_fit <- clean_lm(fit)
-#'result <- check_independence(clean_fit)
-#'result$plot
-#'result$independence_ok
-#'}
-#'
-#'@importFrom stats residuals
-#'@importFrom lmtest dwtest
-#'@import ggplot2
-#'
-#'@export
+#' @export
 check_independence <- function(object, use_test = TRUE) {
   if (!inherits(object, "clean_lm")) {
     stop("Input must be a clean_lm object.")
@@ -50,7 +25,7 @@ check_independence <- function(object, use_test = TRUE) {
 
   res <- stats::residuals(object$model)
 
-  plot <- ggplot2::ggplot(data.frame(index= seq_along(res), res = res),
+  plot <- ggplot2::ggplot(data.frame(index = seq_along(res), res = res),
                           ggplot2::aes(x = index, y = res)) +
     ggplot2::geom_point(color = "orange") +
     ggplot2::geom_hline(yintercept = 0, linetype = "dashed", color = "darkorange") +
@@ -60,34 +35,42 @@ check_independence <- function(object, use_test = TRUE) {
     ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5, face = "bold"))
 
   test_result <- NULL
-  independence_ok <- NULL
+  assumption_ok <- NA
+  msg <- NULL
 
   if (isTRUE(use_test)) {
-    test_result <- tryCatch({
-      lmtest::dwtest(object$model)
-    }, error = function(e) {
-      warning("Durbin-Watson test errored: ", e$message)
-      NULL
-    })
+    test_result <- tryCatch(
+      lmtest::dwtest(object$model),
+      error = function(e) e
+    )
 
-    if (is.null(test_result)) {
-      independence_ok <- "Test Error: Interpret plot visually."
-    } else if (test_result$p.value < 0.05) {
-      independence_ok <- FALSE
+    if (inherits(test_result, "error") || is.na(test_result$p.value)) {
+      assumption_ok <- NA
+      msg <- "Durbin-Watson test could not be computed. Please interpret the plot visually."
     } else {
-      independence_ok <- TRUE
+      assumption_ok <- test_result$p.value >= 0.05
+      msg <- if (assumption_ok) {
+        "Independence assumption appears reasonable."
+      } else {
+        "Independence assumption may not hold. Inspect the residual plot."
+      }
     }
   } else {
-    independence_ok <- "Test Skipped: Interpret plot visually."
+    assumption_ok <- NA
+    msg <- "Test skipped. Please interpret the plot visually."
   }
 
   # update clean_lm object
-  object$assumptions$independence <- independence_ok
+  object$assumptions$independence <- assumption_ok
+  object$assumptions_msgs$independence <- msg
 
-  return(list(
+  result <- list(
     plot = plot,
     test_result = test_result,
-    independence_ok = independence_ok,
+    assumption_ok = assumption_ok,
+    message = msg,
     object = object
-  ))
+  )
+  class(result) <- c("check_independence", "check_assumption")
+  return(result)
 }

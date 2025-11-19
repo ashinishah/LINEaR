@@ -4,42 +4,30 @@
 \alias{check_LINE}
 \title{Check LINE Assumptions}
 \usage{
-check_LINE(object, use_tests = TRUE)
+check_LINE(
+  object,
+  linearity = TRUE,
+  independence = TRUE,
+  normality = TRUE,
+  equalvariance = TRUE
+)
 }
 \arguments{
-\item{object}{A \code{clean_lm} object. Must contain a \code{model} component
-that is a fitted \code{lm} object.}
+\item{object}{A \code{clean_lm} object.}
 
-\item{use_tests}{Logical flag indicating whether to run statistical tests
-(RESET, Durbin-Watson, Shapiro-Wilk, Breusch-Pagan). Defaults to \code{TRUE}.}
+\item{linearity}{Logical, whether to run the linearity check. Default TRUE.}
+
+\item{independence}{Logical, whether to run the independence check. Default TRUE.}
+
+\item{normality}{Logical, whether to run the normality check. Default TRUE.}
+
+\item{equalvariance}{Logical, whether to run the equal variance check. Default TRUE.}
 }
 \value{
-A list with the following components:
-\item{linearity}{Result from \code{check_linearity()}.}
-\item{independence}{Result from \code{check_independence()}.}
-\item{normality}{Result from \code{check_normality()}.}
-\item{equalvariance}{Result from \code{check_equalvariance()}.}
-\item{object}{The input \code{clean_lm} object with its
-  \code{assumptions} fields updated.}
+An object of class \code{check_LINE}, with components for each
+  assumption run, plus the updated \code{clean_lm} object.
 }
 \description{
-Runs all four assumption checks (Linearity, Independence, Normality, Equal Variance)
-on a fitted linear regression model wrapped in a \code{clean_lm} object.
-}
-\details{
-This function provides a one-stop diagnostic for the four classical
-linear regression assumptions: Linearity, Independence, Normality and
-Equal Variance. Each component includes a plot,
-optional statistical test, and a logical flag or message indicating
-whether the assumption appears valid.
-}
-\examples{
-\dontrun{
-fit <- clean_lm(mpg ~ wt + hp, data = mtcars)
-result <- check_LINE(fit)
-result$linearity$plot
-result$normality$normality_ok
-result$object$assumptions
-}
-
+Runs selected assumption checks (Linearity, Independence, Normality,
+Equal Variance) on a fitted \code{clean_lm} object.
 }

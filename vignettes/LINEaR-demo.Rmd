@@ -1,19 +1,185 @@
 ---
-title: "LINEaR-demo"
+title: "LINEaR: Assumption Checks for Simple Linear Regression"
+author: "Ashini Shah"
+date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{LINEaR-demo}
+  %\VignetteIndexEntry{LINEaR Demo}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
-)
+```{r setup, include = FALSE}
+devtools::load_all()
+library(LINEaR)
+library(ggplot2)
+library(bench)
 ```
 
-```{r setup}
-library(LINEaR)
+### Introduction to LINEaR
+
+This vignette demonstrates the LINEaR package, which provides diagnostics for LINE assumptions (Linearity, Independence, Normality, and Equal Variance) in simple linear regression. Violation of these assumptions can invalidate estimation or inference, so transparent diagnostics are crucial. In the following, we show how to simulate data, run assumption checks, and summarize results. We also verify the correctness and performance of this package by comparing results against base R functions. 
+
+### Generate a reproducible dataset
+
+We use the simulate_lm_data function in the LINEaR package to generate a 100 observations from a linear model with intercept = 2, slope = 0.5, and error variance = 1. We set a seed to ensure reproducibility of the random error terms. 
+
+```{r}
+sim_data <- simulate_lm_data(
+  n = 100,        # number of data points
+  beta0 = 2,      # intercept parameter
+  beta1 = 0.5,    # slope parameter
+  sigma = 1,      # standard deviation of error term
+  seed = 123      # reproducible random error
+  )
+
+head(sim_data)    # see the data; simulate_lm_data() produces n (x,y) pairs.
+
 ```
+
+### Fit a model
+
+We fit a simple linear model to our simulated observations using `clean_lm()`. We view a clear summary of the regression using `summary()`. Because no assumption checks have been performed yet, the output shows the usual regression summary (as seen in `lm()`) and indicates assumption tests were not run. This ensures checks are only run when requested.
+
+```{r}
+fit <- clean_lm(y ~ x, data = sim_data)
+summary(fit)
+```
+
+### Perform visual diagnostics for each assumption individually
+
+To determine whether each LINE assumption holds for this data, we generate relevant diagnostic plots.  
+
+```{r, fig.height=6, fig.width=7}
+lin_result <- check_linearity(fit)
+ind_result <- check_independence(fit)
+norm_result <- check_normality(fit)
+eqv_result <- check_equalvariance(fit)
+
+#View plots
+lin_result$plot
+ind_result$plot
+norm_result$plot
+eqv_result$plot
+```
+
+### Perform statistical tests for each assumption individually
+
+To be more robust, we may also run relevant statistical tests for each assumption by setting the `use_test` parameter to `TRUE`. Tests can be used in conjunction with the plots to assess validity of each assumption.
+
+The test results determine whether the final logical flag (*_ok) is set to `TRUE` or `FALSE`. Note that the final flag does not account for visual diagnostics; users should determine final validity using both visual results and test results together. 
+
+`check_normality()` also has a parameter allowing for the calculation of skewness and kurtosis. It defaults to `FALSE`, but can be changed using the `use_skew_kurt` parameter.
+
+```{r}
+lin_result <- check_linearity(fit, use_test = TRUE)
+ind_result <- check_independence(fit, use_test = TRUE)
+norm_result <- check_normality(fit, use_test = TRUE, use_skew_kurt = TRUE)
+eqv_result <- check_equalvariance(fit, use_test = TRUE)
+
+#View test results and logical flags
+lin_result$test_result        # Ramsey RESET test
+lin_result$assumption_ok 
+
+ind_result$test_result        # Durbin-Watson test
+ind_result$assumption_ok
+
+norm_result$test_result       # Shapiro-Wilk test
+norm_result$assumption_ok
+norm_result$skew_kurt
+
+eqv_result$test_result        # Durbin-Watson test
+eqv_result$assumption_ok
+
+```
+
+### Combine assumption checks with `check_LINE()`
+
+Individual check functions can assess assumptions one at a time, while the `check_LINE()` function provides a convenient way to check all of them at once. `check_LINE()` defaults to running all four statistical tests, but users can also choose which ones to include. 
+
+```{r}
+#note the syntax change: summary calls on x$object, not x alone
+fit_sum <- check_LINE(fit)$object
+
+# summarize regression + assumptions
+summary(fit_sum)
+```
+### Example: Skipping select tests in `check_LINE()`
+
+Users can skip certain checks by setting arguments to `FALSE`. Skipped checks are explicitly reported as "not run" in the summary. Below, tests for independence and equal variance are skipped.
+
+```{r}
+fit_new <- check_LINE(fit, independence = FALSE, equalvariance = FALSE)$object
+summary(fit_new)
+```
+### Example: Compact Overview with `check_LINE()`
+
+Typing `check_LINE()` will show a concise overview of assumption results without the regression summary. For both the regression summary and assumption results, use `summary()`. 
+
+```{r}
+check_LINE(fit, independence = FALSE, equalvariance = FALSE)
+```
+
+### Failed assumption checks
+
+If an assumption check fails (statistically), the result will be `FALSE` and users will be prompted to use visual diagnostics to draw conclusions.
+
+```{r}
+# create non-linear model
+set.seed(123)
+dat <- data.frame(
+  x = 1:50,
+  y = sqrt(1:50) + rnorm(50, sd = 0.5)
+)
+
+fit_bad <- clean_lm(y ~ x, data = dat)
+fit_bad <- check_LINE(fit_bad)$object
+summary(fit_bad)
+
+```
+### Errored assumption checks
+
+If an assumption check errors, the result will be `NA`, and users will be clearly notified. In this example, the data set is perfectly linear, resulting in a failure of all checks and additional warnings. Messages communicate clearly how to proceed. 
+```{r}
+# Very small dataset
+dat <- data.frame(x = 1:3, y = c(2, 4, 6))
+fit_err <- clean_lm(y ~ x, data = dat)
+
+# Run all checks
+fit_err <- check_LINE(fit_err)$object
+summary(fit_err)
+```
+
+### Comparing LINEaR against base R 
+
+We demonstrate the correctness and efficiency of LINEaR by comparing to base R. 
+
+```{r}
+# Correctness check
+fit_clean <- clean_lm(y ~ x, data = sim_data)
+fit_base  <- lm(y ~ x, data = sim_data)
+
+# Compare coefficients, residuals, fitted values (expect TRUE for all)
+all.equal(coef(fit_clean$model), coef(fit_base))
+all.equal(fitted(fit_clean$model), fitted(fit_base))
+all.equal(residuals(fit_clean$model), residuals(fit_base))
+
+# Efficiency check
+bm <- bench::mark(
+  clean_lm = { clean_lm(y ~ x, data = sim_data); NULL },
+  lm       = { lm(y ~ x, data = sim_data); NULL }
+)
+bm$expression <- as.character(bm$expression)
+bm
+
+```
+
+### Best Practices
+
+- Use `check_LINE()` for quick overview; run individual checks for detailed plots.
+- Use `summary(fit)` for regression + assumptions; `check_LINE()` for a compact diagnostic view.
+- Combine tests and plots to draw conclusions-- don't rely on test results alone.
+
+### Closing Comments on LINEaR
+
+LINEaR provides a clear workflow for regression diagnostics. It combines visual plots with statistical tests to check LINE assumptions (Linearity, Independence, Normality, Equal Variance). `clean_lm()` results match base R’s `lm()`, and `summary()` integrates regression results and assumption checks into a tidy summary. The package encourages transparent and reproducible analysis by displaying clear messages and prompting visual inspection when tests are skipped or undefined. 

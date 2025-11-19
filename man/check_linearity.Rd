@@ -14,35 +14,15 @@ that is a fitted \code{lm} object.}
 (\code{lmtest::resettest}). Defaults to \code{TRUE}.}
 }
 \value{
-A list with the following components:
-\item{plot}{A ggplot2 object showing residuals vs. fitted values.}
-\item{test_result}{The result of the RESET test, or \code{NULL} if not run
-  or if the test errored.}
-\item{linearity_ok}{Logical indicating whether the linearity assumption
-  appears valid (\code{TRUE}/\code{FALSE}), or a character message if the test
-  was skipped or errored.}
-\item{object}{The input \code{clean_lm} object with its
-  \code{assumptions$linearity} field updated.}
+An object of class \code{check_linearity} and \code{check_assumption},
+  with components:
+  \item{plot}{Residuals vs. fitted values plot (ggplot2).}
+  \item{test_result}{RESET test result, or error object if test failed.}
+  \item{assumption_ok}{Logical TRUE/FALSE if test succeeded, NA if skipped/errored.}
+  \item{message}{Character string prompting interpretation.}
+  \item{object}{The input \code{clean_lm} object with updated assumptions.}
 }
 \description{
 Produces a residuals vs. fitted plot and optionally performs the RESET test
 to assess linearity assumption in a fitted linear regression model.
-}
-\details{
-The function checks linearity both visually (via residuals vs. fitted plot)
-and statistically (via the RESET test). If residuals are scattered randomly
-about 0, the linearity assumption is more plausible. If the RESET test is run and
-succeeds, \code{linearity_ok} is set to \code{TRUE} if the p-value is
-greater than 0.05, otherwise \code{FALSE}. If the test errors or is skipped,
-a message is returned prompting the user to interpret the plot visually.
-}
-\examples{
-\dontrun{
-fit <- lm(mpg ~ wt + hp, data = mtcars)
-clean_fit <- clean_lm(fit)
-result <- check_linearity(clean_fit)
-result$plot
-result$linearity_ok
-}
-
 }

@@ -1,60 +1,56 @@
 #' Check LINE Assumptions
 #'
-#' Runs all four assumption checks (Linearity, Independence, Normality, Equal Variance)
-#' on a fitted linear regression model wrapped in a \code{clean_lm} object.
+#' Runs selected assumption checks (Linearity, Independence, Normality,
+#' Equal Variance) on a fitted \code{clean_lm} object.
 #'
-#' @param object A \code{clean_lm} object. Must contain a \code{model} component
-#'   that is a fitted \code{lm} object.
+#' @param object A \code{clean_lm} object.
+#' @param linearity Logical, whether to run the linearity check. Default TRUE.
+#' @param independence Logical, whether to run the independence check. Default TRUE.
+#' @param normality Logical, whether to run the normality check. Default TRUE.
+#' @param equalvariance Logical, whether to run the equal variance check. Default TRUE.
 #'
-#' @param use_tests Logical flag indicating whether to run statistical tests
-#'   (RESET, Durbin-Watson, Shapiro-Wilk, Breusch-Pagan). Defaults to \code{TRUE}.
-#'
-#' @return A list with the following components:
-#' \item{linearity}{Result from \code{check_linearity()}.}
-#' \item{independence}{Result from \code{check_independence()}.}
-#' \item{normality}{Result from \code{check_normality()}.}
-#' \item{equalvariance}{Result from \code{check_equalvariance()}.}
-#' \item{object}{The input \code{clean_lm} object with its
-#'   \code{assumptions} fields updated.}
-#'
-#' @details
-#' This function provides a one-stop diagnostic for the four classical
-#' linear regression assumptions: Linearity, Independence, Normality and
-#' Equal Variance. Each component includes a plot,
-#' optional statistical test, and a logical flag or message indicating
-#' whether the assumption appears valid.
-#'
-#' @examples
-#' \dontrun{
-#' fit <- clean_lm(mpg ~ wt + hp, data = mtcars)
-#' result <- check_LINE(fit)
-#' result$linearity$plot
-#' result$normality$normality_ok
-#' result$object$assumptions
-#' }
+#' @return An object of class \code{check_LINE}, with components for each
+#'   assumption run, plus the updated \code{clean_lm} object.
 #'
 #' @export
-check_LINE <- function(object, use_tests = TRUE) {
+check_LINE <- function(object,
+                       linearity = TRUE,
+                       independence = TRUE,
+                       normality = TRUE,
+                       equalvariance = TRUE) {
   if (!inherits(object, "clean_lm")) {
     stop("Input must be a clean_lm object.")
   }
 
-  lin_res  <- check_linearity(object, use_test = use_tests)
-  ind_res  <- check_independence(object, use_test = use_tests)
-  norm_res <- check_normality(object, use_test = use_tests)
-  eqv_res  <- check_equalvariance(object, use_test = use_tests)
+  lin <- ind <- norm <- eqv <- NULL
 
-  # Update assumptions in the clean_lm object
-  object$assumptions$linearity     <- lin_res$linearity_ok
-  object$assumptions$independence  <- ind_res$independence_ok
-  object$assumptions$normality     <- norm_res$normality_ok
-  object$assumptions$equalvariance <- eqv_res$equalvariance_ok
+  if (linearity) {
+    lin <- check_linearity(object)
+    object <- lin$object
+  }
 
-  return(list(
-    linearity     = lin_res,
-    independence  = ind_res,
-    normality     = norm_res,
-    equalvariance = eqv_res,
-    object        = object
-  ))
+  if (independence) {
+    ind <- check_independence(object)
+    object <- ind$object
+  }
+
+  if (normality) {
+    norm <- check_normality(object)
+    object <- norm$object
+  }
+
+  if (equalvariance) {
+    eqv <- check_equalvariance(object)
+    object <- eqv$object
+  }
+
+  result <- list(
+    linearity      = lin,
+    independence   = ind,
+    normality      = norm,
+    equalvariance = eqv,
+    object         = object
+  )
+  class(result) <- "check_LINE"
+  return(result)
 }

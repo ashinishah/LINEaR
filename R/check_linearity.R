@@ -5,41 +5,16 @@
 #'
 #' @param object A \code{clean_lm} object. Must contain a \code{model} component
 #'   that is a fitted \code{lm} object.
-#'
 #' @param use_test Logical flag indicating whether to run the RESET test
 #'   (\code{lmtest::resettest}). Defaults to \code{TRUE}.
 #'
-#' @return A list with the following components:
-#' \item{plot}{A ggplot2 object showing residuals vs. fitted values.}
-#' \item{test_result}{The result of the RESET test, or \code{NULL} if not run
-#'   or if the test errored.}
-#' \item{linearity_ok}{Logical indicating whether the linearity assumption
-#'   appears valid (\code{TRUE}/\code{FALSE}), or a character message if the test
-#'   was skipped or errored.}
-#' \item{object}{The input \code{clean_lm} object with its
-#'   \code{assumptions$linearity} field updated.}
-#'
-#' @details
-#' The function checks linearity both visually (via residuals vs. fitted plot)
-#' and statistically (via the RESET test). If residuals are scattered randomly
-#' about 0, the linearity assumption is more plausible. If the RESET test is run and
-#' succeeds, \code{linearity_ok} is set to \code{TRUE} if the p-value is
-#' greater than 0.05, otherwise \code{FALSE}. If the test errors or is skipped,
-#' a message is returned prompting the user to interpret the plot visually.
-#'
-#' @examples
-#' \dontrun{
-#' fit <- lm(mpg ~ wt + hp, data = mtcars)
-#' clean_fit <- clean_lm(fit)
-#' result <- check_linearity(clean_fit)
-#' result$plot
-#' result$linearity_ok
-#' }
-#'
-#' @importFrom stats fitted residuals
-#' @importFrom lmtest resettest
-#' @importFrom rlang .data
-#' @import ggplot2
+#' @return An object of class \code{check_linearity} and \code{check_assumption},
+#'   with components:
+#'   \item{plot}{Residuals vs. fitted values plot (ggplot2).}
+#'   \item{test_result}{RESET test result, or error object if test failed.}
+#'   \item{assumption_ok}{Logical TRUE/FALSE if test succeeded, NA if skipped/errored.}
+#'   \item{message}{Character string prompting interpretation.}
+#'   \item{object}{The input \code{clean_lm} object with updated assumptions.}
 #'
 #' @export
 check_linearity <- function(object, use_test = TRUE) {
@@ -63,34 +38,42 @@ check_linearity <- function(object, use_test = TRUE) {
     ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5, face = "bold"))
 
   test_result <- NULL
-  linearity_ok <- NULL
+  assumption_ok <- NA
+  msg <- NULL
 
   if (isTRUE(use_test)) {
-    test_result <- tryCatch({
-      lmtest::resettest(object$model)
-    }, error = function(e) {
-      warning("RESET test errored: ", e$message)
-      NULL
-    })
+    test_result <- tryCatch(
+      lmtest::resettest(object$model),
+      error = function(e) e
+    )
 
-    if (is.null(test_result)) {
-      linearity_ok <- "Test Error: Interpret plot visually."
-    } else if (test_result$p.value < 0.05) {
-      linearity_ok <- FALSE
+    if (inherits(test_result, "error") || is.na(test_result$p.value)) {
+      assumption_ok <- NA
+      msg <- "RESET test could not be computed. Please interpret the residual plot visually."
     } else {
-      linearity_ok <- TRUE
+      assumption_ok <- test_result$p.value >= 0.05
+      msg <- if (assumption_ok) {
+        "Linearity assumption appears reasonable."
+      } else {
+        "Linearity assumption may not hold. Inspect the residual plot."
+      }
     }
   } else {
-    linearity_ok <- "Test Skipped: Interpret plot visually."
+    assumption_ok <- NA
+    msg <- "Test skipped. Please interpret the residual plot visually."
   }
 
   # update assumptions in the clean_lm object
-  object$assumptions$linearity <- linearity_ok
+  object$assumptions$linearity <- assumption_ok
+  object$assumptions_msgs$linearity <- msg
 
-  return(list(
+  result <- list(
     plot = plot,
     test_result = test_result,
-    linearity_ok = linearity_ok,
+    assumption_ok = assumption_ok,
+    message = msg,
     object = object
-  ))
+  )
+  class(result) <- c("check_linearity", "check_assumption")
+  return(result)
 }

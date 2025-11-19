@@ -14,37 +14,16 @@ component that is a fitted \code{lm} object.}
 test (\code{lmtest::dwtest}). Defaults to \code{TRUE}.}
 }
 \value{
-A list with the following components:
-\item{plot}{A ggplot2 object showing residuals vs. observation index.}
-\item{test_result}{The result of the Durbin-Watson test, or \code{NULL} if not run
- or if the test errored.}
-\item{independence_ok}{Logical indicating whether the independence assumption
- appears valid (\code{TRUE}/\code{FALSE}), or a character message if the test
- was skipped or errored.}
-\item{object}{The input \code{clean_lm} object with its
- \code{assumptions$independence} field updated.}
+An object of class \code{check_independence} and \code{check_assumption},
+  with components:
+  \item{plot}{Residuals vs. observation index plot (ggplot2).}
+  \item{test_result}{Durbin-Watson test result, or error object if test failed.}
+  \item{assumption_ok}{Logical TRUE/FALSE if test succeeded, NA if skipped/errored.}
+  \item{message}{Character string prompting interpretation.}
+  \item{object}{The input \code{clean_lm} object with updated assumptions.}
 }
 \description{
 Produces a residuals vs. observation index plot, optionally performs
 the Durbin-Watson test, in order to assess independence of residuals
 assumption in a fitted linear regression model.
-}
-\details{
-The function checks independence both visually (via residual vs. index plot)
-and statistically (via Durbin-Watson test). The residual plot is informative
-when the observation index has inherent meaning (e.g. time order). If the
-Durbin-Watson test is run and succeeds without error, \code{independence_ok}
-is set to \code{TRUE} if the p-value is greater that 0.05, otherwise \code{FALSE}.
-If the test errors of is skippped, a characcter message is returned, prompting
-user to interpret plot visually.
-}
-\examples{
-\dontrun{
-fit <- lm(mpg ~ wt + hp, data = mtcars)
-clean_fit <- clean_lm(fit)
-result <- check_independence(clean_fit)
-result$plot
-result$independence_ok
-}
-
 }

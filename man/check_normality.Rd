@@ -17,39 +17,18 @@ that is a fitted \code{lm} object.}
 Defaults to \code{FALSE}.}
 }
 \value{
-A list with the following components:
-\item{plot}{A ggplot2 object showing Q-Q plot.}
-\item{test_result}{The result of the Shapiro-Wilk test, or \code{NULL} if not run
- or if the test errored.}
-\item{skew_kurt}{A list with skewness and kurtosis values, or \code{NULL}
- if not computed.}
-\item{normality_ok}{Logical indicating whether the normality assumption
- appears valid (\code{TRUE}/\code{FALSE}), or a character message if the test
- was skipped or errored.}
-\item{object}{The input \code{clean_lm} object with its
- \code{assumptions$normality} field updated.}
+An object of class \code{check_normality} and \code{check_assumption},
+  with components:
+  \item{plot}{A ggplot2 object showing Q-Q plot.}
+  \item{test_result}{The result of the Shapiro-Wilk test, or error object if test failed.}
+  \item{skew_kurt}{A list with skewness and kurtosis values, or \code{NULL} if not computed.}
+  \item{assumption_ok}{Logical TRUE/FALSE if test succeeded, NA if skipped/errored.}
+  \item{message}{Character string prompting interpretation.}
+  \item{object}{The input \code{clean_lm} object with updated assumptions.}
 }
 \description{
 Produces a Q-Q plot, optionally performs a Shapiro-Wilk test,
 optionally computes skewness and kurtosis in order
 to assess normality of residuals assumption in a fitted
 linear regression model.
-}
-\details{
-The function checks normality both visually (via Q-Q plot)
-and statistically (via the Shapiro-Wilk test). If points closely follow the diagonal
-line, the normality assumption is more plausible. If the Shapiro-Wilk test is run
-and succeeds without error, \code{normality_ok} is set to \code{TRUE} if the
-p-value is greater than 0.05, otherwise \code{FALSE}. If the test errors or is skipped,
-a character message is returned prompting the user to interpret the plot visually.
-}
-\examples{
-\dontrun{
-fit <- lm(mpg ~ wt + hp, data = mtcars)
-clean_fit <- clean_lm(fit)
-result <- check_normality(clean_fit)
-result$plot
-result$normality_ok
-}
-
 }

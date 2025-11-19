@@ -15,7 +15,7 @@ test_that("clean_lm returns expected structure", {
 
   # Assumptions list
   expect_named(fit$assumptions,
-               c("linearity","independence","normality","equal_variance"))
+               c("linearity","independence","normality","equalvariance"))
 
   # Call object
   expect_true(is.call(fit$call))
