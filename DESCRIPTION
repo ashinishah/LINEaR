@@ -16,11 +16,11 @@ Suggests:
     knitr,
     rmarkdown,
     testthat (>= 3.0.0), 
-    bench
+    bench, 
+    rlang
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Imports: 
     ggplot2,
     lmtest,
-    stats,
-    rlang
+    stats

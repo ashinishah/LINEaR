@@ -20,9 +20,8 @@
 #' @examples
 #' fit <- clean_lm(mpg ~ wt + hp, data = mtcars)
 #' fit <- check_LINE(fit)$object
-#' summary_clean_lm(fit)
+#' summary(fit)
 #'
-#' @export
 #' @export
 summary.clean_lm <- function(object, ...) {
   cat("Summary of clean_lm model:\n\n")
