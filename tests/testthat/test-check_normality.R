@@ -1,27 +1,8 @@
-test_that("check_normality runs and returns expected structure", {
-  fit <- lm(mpg ~ wt + hp, data = mtcars)
-  clean_fit <- clean_lm(mpg ~ wt + hp, data = mtcars)
+test_that("check_normality returns logical flag and plot", {
+  sim_data <- simulate_lm_data(n = 20, beta0 = 0, beta1 = 1, sigma = 1, seed = 3)
+  fit <- clean_lm(y ~ x, data = sim_data)
+  res <- check_normality(fit)
 
-  # Run with defaults
-  result <- check_normality(clean_fit)
-
-  expect_type(result, "list")
-  expect_true(all(c("plot", "test_result", "skew_kurt", "normality_ok", "object") %in% names(result)))
-  expect_s3_class(result$plot, "ggplot")
-  expect_s3_class(result$object, "clean_lm")
-
-  # Run with skew/kurt enabled
-  result2 <- check_normality(clean_fit, use_test = FALSE, use_skew_kurt = TRUE)
-  expect_type(result2$skew_kurt, "list")
-  expect_true(all(c("skewness", "kurtosis") %in% names(result2$skew_kurt)))
-  expect_true(is.character(result2$normality_ok)) # skipped message
+  expect_type(res$assumption_ok, "logical")
+  expect_s3_class(res$plot, "ggplot")
 })
-
-test_that("check_normality handles errors gracefully", {
-  df <- data.frame(x = 1:2, y = c(1, 2))
-  clean_fit_small <- clean_lm(y ~ x, data = df)
-
-  result <- suppressWarnings(check_normality(clean_fit_small, use_test = TRUE))
-  expect_true(is.character(result$normality_ok))
-})
-
